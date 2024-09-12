@@ -9,7 +9,7 @@
 		MARTIAL_GRAB_NECK = 10,
 		MARTIAL_GRAB_KILL = 5,
 	)
-	combos = list(/datum/martial_combo/cqc/slam, /datum/martial_combo/cqc/kick, /datum/martial_combo/cqc/restrain, /datum/martial_combo/cqc/pressure, /datum/martial_combo/cqc/consecutive)
+	combos = list(/datum/martial_combo/cqc/slam, /datum/martial_combo/cqc/kick, /datum/martial_combo/cqc/restrain, /datum/martial_combo/cqc/pressure, /datum/martial_combo/cqc/consecutive, /datum/martial_combo/cqc/pacify)
 	var/restraining = FALSE //used in cqc's disarm_act to check if the disarmed is being restrained and so whether they should be put in a chokehold or not
 	var/static/list/areas_under_siege = typecacheof(list(/area/crew_quarters/kitchen,
 														/area/crew_quarters/cafeteria,
@@ -103,29 +103,13 @@
 		return TRUE
 	else
 		restraining = FALSE
-
-	var/obj/item/I = null
-
-	if(prob(50))
-		if(!D.stat || D.body_position != LYING_DOWN || !restraining)
-			I = D.get_active_hand()
-			D.visible_message("<span class='warning'>[A] strikes [D]'s jaw with their hand!</span>", \
-								"<span class='userdanger'>[A] strikes your jaw, disorienting you!</span>")
-			playsound(get_turf(D), 'sound/weapons/cqchit1.ogg', 50, 1, -1)
-			if(I && D.drop_from_active_hand())
-				A.put_in_hands(I, ignore_anim = FALSE)
-			D.Jitter(4 SECONDS)
-			D.apply_damage(5, BRUTE)
-			objective_damage(A, D, 5, BRUTE)
-	else
-		D.visible_message("<span class='danger'>[A] attempted to disarm [D]!</span>", "<span class='userdanger'>[A] attempted to disarm [D]!</span>")
-		playsound(D, 'sound/weapons/punchmiss.ogg', 25, 1, -1)
-
-	add_attack_logs(A, D, "Melee attacked with martial-art [src] : Disarmed [I ? " grabbing \the [I]" : ""]", ATKLOG_ALL)
+	var/bonus_damage = 15
+	D.apply_damage(bonus_damage, STAMINA)
+	objective_damage(A, D, bonus_damage, STAMINA)
 	return TRUE
 
 /datum/martial_art/cqc/explaination_header(user)
 	to_chat(user, "<b><i>You try to remember some of the basics of CQC.</i></b>")
 
 /datum/martial_art/cqc/explaination_footer(user)
-	to_chat(user, "<b><i>In addition, by having your throw mode on when being attacked, you enter an active defense mode where you have a chance to block and sometimes even counter attacks done to you.</i></b>")
+	to_chat(user, "<b><i>In addition, by having your throw mode on when being attacked, you enter an active defense mode where you are able to block and even counter some of the attacks done to you. But remember: you are still fully vulnerable right after the fact.</i></b>")
